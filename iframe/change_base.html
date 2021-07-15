@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="在线Base64生成转换小工具，可以实现任意文件转Base64 Data-URI编码，文件往页面中一拖即可。" />
+    <meta name="keywords" content="base64, FileReader, readAsDataURL, 文件" />
+    <title>任意文件转base64-直接拖进来</title>
+    <script src="static/js/jquery.min.js"></script>
+    <style>
+        body {
+            word-break: break-all;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", monospace;
+
+        }
+
+        #drag_box {
+            padding: 15px;
+            background-color: #eee;
+        }
+
+        .empty {
+            width: 100%;
+            min-height: 380px;
+            position: relative;
+
+        }
+
+        .empty::before {
+            position: absolute;
+            font-size: 50px;
+            content: '任意文件\A拖到这里';
+            white-space: pre;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: gray;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 1200px;
+            margin: 0 auto;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+
+
+
+        textarea {
+            padding: 5px 10px;
+            width: 100%;
+            max-width: 100%;
+            line-height: normal;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin: 5px 0 15px;
+        }
+
+        textarea:hover,
+        textarea:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%), 0 0 8px rgb(102 175 233 / 60%);
+            box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%), 0 0 8px rgb(102 175 233 / 60%);
+        }
+
+        .ttx {
+            padding: 25px 0 10px;
+        }
+
+        .html {
+            min-height: 70px;
+            text-align: center;
+            padding: 5px;
+            margin: 10px 0;
+            background-color: #CCFFFF88;
+        }
+
+        .btnx {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background: #3399FF;
+            color: #fff;
+            border: 1px solid transparent;
+            border-radius: 4px;
+
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div id="drag_box" class="empty">
+            <h2>拖拽上传文件</h2>
+        </div>
+        <textarea id="textarea" rows="10" placeholder="base64文本显示区域"></textarea>
+        <script>
+            var drag_box = document.getElementById("drag_box");
+            drag_box.addEventListener("dragenter", function (event) { event.preventDefault(); }, false);
+            drag_box.addEventListener("dragover", function (event) { event.preventDefault(); }, false);
+            drag_box.addEventListener("drop", function (event) {
+                event.preventDefault();
+                var reader = new FileReader();
+                reader.readAsDataURL(event.dataTransfer.files[0]);
+                reader.onload = function (e) {
+                    // console.log(this);
+
+                    var reg = new RegExp('data:image/', 'i');
+                    var is_img = reg.test(this.result)
+
+                    // console.log(e);
+                    $("#textarea").html(e.target.result);
+                    $("#drag_box").removeClass("empty");
+                    var html = '<h3 style="color:#f00;">文件不是图片类型</h3>';
+                    if (is_img) {
+                        html = '<img src="' + this.result + '" alt="图片Base64编码" style="max-width:100%;"/>'
+                    }
+                    $("#drag_box").html(html);
+                };
+
+
+            }, false);
+        </script>
+    </div>
+    <hr>
+    <div class="container">
+
+        <div>
+            <h1 class="ttx" style="text-align: center;">文字特效</h1>
+
+            <textarea id="wordlist" rows="8" placeholder="请输入要添加特效的文字">法外狂徒张三</textarea>
+            <button class="btnx"> 生成代码</button>
+            <div class="html"></div>
+            <textarea id="wordhtml" rows="10" placeholder="code显示区域"></textarea>
+        </div>
+
+
+        <script type="text/javascript">
+            /**
+             * @function 生成特效文字
+             * @param {String} [words=''] 需要生成特效的一段文字,默认为空
+             * @return {String}  返回html内容
+             * @example  effectText('张三')    //<span style="color: #30c26c;font-size: 16px;">张</span><span style="color: #fdb853;font-size: 18px;">三</span>
+             */
+            function effectText(words = '') {
+                words = [...words]
+                let endText = "";
+                let arrSize = new Array("12px", "14px", "16px", "18px", "24px", "32px", "48px");    //文字大小
+                for (let time = 0; time <= (words.length - 1); time++) {
+                    if (words[time] != " ") {
+                        let col = "#" + Math.random().toString(16).slice(-6);   //随机生成hex颜色
+                        let i = Math.floor((Math.random() * arrSize.length));
+                        endText += `<span style="color: ${col};font-size: ${arrSize[i]};">${words[time]}</span>`;
+                    }
+                }
+                return endText;
+            }
+            $(function () {
+                $(".btnx").click(function () {
+                    var textarea = $("#wordlist").val();
+                    var text = effectText(textarea);
+                    // console.log(text);
+                    $(".html,#wordhtml").html(text)
+
+                })
+            })
+
+
+        </script>
+    </div>
+
+</body>
+
+</html>
